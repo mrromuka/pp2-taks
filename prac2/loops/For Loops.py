@@ -2,7 +2,9 @@
 fruits = ["apple", "banana", "cherry"]
 for x in fruits:
   print(x)
-  #2
-for x in "banana":
+#2
+fruits = ["apple", "banana", "cherry"]
+for x in fruits:
   print(x)
-  
+  if x == "banana":
+    break
