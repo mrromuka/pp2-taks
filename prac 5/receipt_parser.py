@@ -1,60 +1,33 @@
-#1
 import re
+import json
 
-txt = "The rain in Spain"
-x = re.search("^The.*Spain$", txt)
-#2
-import re
+with open("raw.txt", "r", encoding="utf-8") as f:
+    text = f.read()
 
-txt = "The rain in Spain"
-x = re.findall("ai", txt)
-print(x)
-#3
-import re
+price_pattern = re.compile(r"\b\d{1,3}(?: \d{3})*(?:,\d{2})?\b")
+prices_str = price_pattern.findall(text)
+prices_float = [float(p.replace(" ", "").replace(",", ".")) for p in prices_str]
 
-txt = "The rain in Spain"
-x = re.findall("Portugal", txt)
-print(x)
-#4
-import re
+product_pattern = re.compile(r"\d+\.\s*(.+?)\s+\d+(?:,\d{2})?")
+products = product_pattern.findall(text)
+products = [p.strip() for p in products]
 
-txt = "The rain in Spain"
-x = re.search("\s", txt)
+total_amount = sum(prices_float)
 
-print("The first white-space character is located in position:", x.start())
-#5
-import re
+datetime_pattern = re.search(r"\b(\d{2}\.\d{2}\.\d{4}) (\d{2}:\d{2}:\d{2})\b", text)
+date = datetime_pattern.group(1) if datetime_pattern else ""
+time = datetime_pattern.group(2) if datetime_pattern else ""
 
-txt = "The rain in Spain"
-x = re.search("Portugal", txt)
-print(x)
-#6
-import re
+payment_pattern = re.search(r"\b(Банковская карта|Cash|Card|Credit|Debit)\b", text)
+payment = payment_pattern.group() if payment_pattern else ""
 
-txt = "The rain in Spain"
-x = re.split("\s", txt)
-print(x)
-#7
-import re
+receipt_data = {
+    "products": products,
+    "prices": prices_float,
+    "total_amount": total_amount,
+    "date": date,
+    "time": time,
+    "payment_method": payment
+}
 
-txt = "The rain in Spain"
-x = re.split("\s", txt, 1)
-print(x)
-#8
-import re
-
-txt = "The rain in Spain"
-x = re.sub("\s", "9", txt)
-print(x)
-#9
-import re
-
-txt = "The rain in Spain"
-x = re.sub("\s", "9", txt, 2)
-print(x)
-#10
-import re
-
-txt = "The rain in Spain"
-x = re.search("ai", txt)
-print(x) #this will print an object
+print(json.dumps(receipt_data, indent=4, ensure_ascii=False))
