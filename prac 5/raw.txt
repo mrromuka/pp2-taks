@@ -1,0 +1,47 @@
+Store: SuperMart
+Date: 2026-03-04 14:35
+
+Milk            2.50
+Bread           1.80
+Eggs            3.20
+Chocolate       4.00
+
+Payment Method: Credit Card
+
+
+ # code
+import re
+import json
+
+
+with open("raw.txt", "r") as file:
+    text = file.read()
+
+
+prices = re.findall(r"\d+\.\d{2}", text)
+prices = [float(p) for p in prices]
+
+
+products = re.findall(r"([A-Za-z]+)\s+\d+\.\d{2}", text)
+
+
+total = sum(prices)
+
+
+datetime = re.search(r"\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}", text)
+datetime = datetime.group() if datetime else None
+
+
+payment = re.search(r"Payment Method:\s*(.*)", text)
+payment = payment.group(1) if payment else None
+
+ Create structured output
+data = {
+    "products": products,
+    "prices": prices,
+    "total": total,
+    "datetime": datetime,
+    "payment_method": payment
+}
+
+print(json.dumps(data, indent=4))
