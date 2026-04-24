@@ -1,105 +1,110 @@
 import pygame
 import sys
-import math
 
 pygame.init()
 
-WIDTH, HEIGHT = 800, 600
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+W, H = 900, 650
+screen = pygame.display.set_mode((W, H))
 pygame.display.set_caption("Paint")
-
-clock = pygame.time.Clock()
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-RED   = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE  = (0, 0, 255)
+GRAY = (220, 220, 220)
 
+colors = [(0,0,0), (255,0,0), (0,255,0), (0,0,255), (255,255,0)]
+color_names = ["Black", "Red", "Green", "Blue", "Yellow"]
+
+font = pygame.font.Font(None, 24)
+
+tool = "pen"
 color = BLACK
-tool = "brush"
+
+drawing = False
 start_pos = None
+
+canvas_rect = pygame.Rect(0, 80, W, H-80)
 
 screen.fill(WHITE)
 
 def draw_ui():
-    pygame.draw.rect(screen, RED, (0, 0, 50, 50))
-    pygame.draw.rect(screen, GREEN, (50, 0, 50, 50))
-    pygame.draw.rect(screen, BLUE, (100, 0, 50, 50))
-    pygame.draw.rect(screen, BLACK, (150, 0, 50, 50))
+    pygame.draw.rect(screen, GRAY, (0, 0, W, 80))
 
-    pygame.draw.rect(screen, (200,200,200), (200,0,100,50))
-    pygame.draw.rect(screen, (200,200,200), (300,0,100,50))
-    pygame.draw.rect(screen, (200,200,200), (400,0,100,50))
+    # tools
+    tools = ["Pen", "Eraser", "Rect", "Circle"]
+    for i, t in enumerate(tools):
+        r = pygame.Rect(10 + i*110, 10, 100, 30)
+        pygame.draw.rect(screen, (180,180,180), r)
+        text = font.render(t, True, BLACK)
+        screen.blit(text, (r.x + 10, r.y + 7))
 
-    font = pygame.font.Font(None, 24)
-    screen.blit(font.render("Brush", True, BLACK), (210, 15))
-    screen.blit(font.render("Rect", True, BLACK), (310, 15))
-    screen.blit(font.render("Circle", True, BLACK), (410, 15))
+    # colors
+    for i, c in enumerate(colors):
+        r = pygame.Rect(10 + i*60, 45, 40, 25)
+        pygame.draw.rect(screen, c, r)
+        if c == color:
+            pygame.draw.rect(screen, BLACK, r, 2)
 
-def get_color(pos):
-    x, y = pos
-    if y < 50:
-        if x < 50: return RED
-        if x < 100: return GREEN
-        if x < 150: return BLUE
-        if x < 200: return BLACK
-    return None
+def get_click(mx, my):
+    if my < 40:
+        if 10 <= mx <= 110: return ("tool", "pen")
+        if 120 <= mx <= 220: return ("tool", "eraser")
+        if 230 <= mx <= 330: return ("tool", "rect")
+        if 340 <= mx <= 440: return ("tool", "circle")
 
-running = True
+    if 45 <= my <= 70:
+        for i in range(len(colors)):
+            if 10 + i*60 <= mx <= 50 + i*60:
+                return ("color", colors[i])
 
-while running:
+    return (None, None)
+
+while True:
     draw_ui()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            pygame.quit()
+            sys.exit()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
-            pos = pygame.mouse.get_pos()
+            mx, my = event.pos
 
-            new_color = get_color(pos)
-            if new_color:
-                color = new_color
+            kind, val = get_click(mx, my)
+            if kind == "tool":
+                tool = val
+                continue
+            if kind == "color":
+                color = val
                 continue
 
-            if 200 <= pos[0] <= 300:
-                tool = "brush"
-            elif 300 <= pos[0] <= 400:
-                tool = "rect"
-                start_pos = pos
-            elif 400 <= pos[0] <= 500:
-                tool = "circle"
-                start_pos = pos
-
-        if event.type == pygame.MOUSEMOTION:
-            if pygame.mouse.get_pressed()[0]:
-                x, y = event.pos
-
-                if tool == "brush":
-                    pygame.draw.circle(screen, color, (x, y), 5)
-
-                elif tool == "eraser":
-                    pygame.draw.circle(screen, WHITE, (x, y), 10)
+            if canvas_rect.collidepoint(mx, my):
+                drawing = True
+                start_pos = event.pos
 
         if event.type == pygame.MOUSEBUTTONUP:
-            end_pos = pygame.mouse.get_pos()
+            if drawing and start_pos:
+                end_pos = event.pos
 
-            if tool == "rect" and start_pos:
-                x1, y1 = start_pos
-                x2, y2 = end_pos
-                pygame.draw.rect(screen, color, (min(x1,x2), min(y1,y2), abs(x1-x2), abs(y1-y2)))
+                if tool == "rect":
+                    x1,y1 = start_pos
+                    x2,y2 = end_pos
+                    pygame.draw.rect(screen, color,
+                        (min(x1,x2), min(y1,y2), abs(x1-x2), abs(y1-y2)))
 
-            if tool == "circle" and start_pos:
-                x1, y1 = start_pos
-                x2, y2 = end_pos
-                radius = int(math.hypot(x2-x1, y2-y1))
-                pygame.draw.circle(screen, color, start_pos, radius)
+                elif tool == "circle":
+                    x1,y1 = start_pos
+                    x2,y2 = end_pos
+                    r = int(((x2-x1)**2 + (y2-y1)**2) ** 0.5)
+                    pygame.draw.circle(screen, color, start_pos, r)
 
+            drawing = False
             start_pos = None
 
-    pygame.display.flip()
-    clock.tick(60)
+        if event.type == pygame.MOUSEMOTION and drawing:
+            if canvas_rect.collidepoint(event.pos):
+                if tool == "pen":
+                    pygame.draw.circle(screen, color, event.pos, 3)
+                elif tool == "eraser":
+                    pygame.draw.circle(screen, WHITE, event.pos, 10)
 
-pygame.quit()
-sys.exit()
+    pygame.display.update()
