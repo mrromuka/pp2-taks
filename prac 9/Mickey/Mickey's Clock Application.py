@@ -15,8 +15,8 @@ bg = pygame.image.load("clock.jpg")
 bg = pygame.transform.scale(bg, (500, 500))
 
 
-right_hand = pygame.image.load("right-hand.png")  # минуты
-left_hand = pygame.image.load("left-hand.png")    # секунды
+right_hand = pygame.image.load("right-hand.png")  
+left_hand = pygame.image.load("left-hand.png")    
 
 
 center = (250, 250)
