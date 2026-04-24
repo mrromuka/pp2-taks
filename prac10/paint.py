@@ -29,7 +29,7 @@ screen.fill(WHITE)
 def draw_ui():
     pygame.draw.rect(screen, GRAY, (0, 0, W, 80))
 
-    # tools
+
     tools = ["Pen", "Eraser", "Rect", "Circle"]
     for i, t in enumerate(tools):
         r = pygame.Rect(10 + i*110, 10, 100, 30)
@@ -37,7 +37,6 @@ def draw_ui():
         text = font.render(t, True, BLACK)
         screen.blit(text, (r.x + 10, r.y + 7))
 
-    # colors
     for i, c in enumerate(colors):
         r = pygame.Rect(10 + i*60, 45, 40, 25)
         pygame.draw.rect(screen, c, r)
