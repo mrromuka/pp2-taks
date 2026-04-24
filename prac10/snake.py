@@ -1,105 +1,97 @@
 import pygame
-import sys
-import math
+import random
 
 pygame.init()
 
-WIDTH, HEIGHT = 800, 600
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Paint")
+w, h = 600, 400
+cell = 10
+
+screen = pygame.display.set_mode((w, h))
+
+x, y = 300, 200
+dx, dy = cell, 0
+
+snake = [(x, y)]
+length = 1
+
+score = 0
+level = 1
+
+food = (0, 0)
 
 clock = pygame.time.Clock()
 
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED   = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE  = (0, 0, 255)
+def spawn_food():
+    while True:
+        fx = random.randrange(0, w, cell)
+        fy = random.randrange(0, h, cell)
+        if (fx, fy) not in snake:
+            return (fx, fy)
 
-color = BLACK
-tool = "brush"
-start_pos = None
+food = spawn_food()
 
-screen.fill(WHITE)
+run = True
 
-def draw_ui():
-    pygame.draw.rect(screen, RED, (0, 0, 50, 50))
-    pygame.draw.rect(screen, GREEN, (50, 0, 50, 50))
-    pygame.draw.rect(screen, BLUE, (100, 0, 50, 50))
-    pygame.draw.rect(screen, BLACK, (150, 0, 50, 50))
+while run:
+    for e in pygame.event.get():
+        if e.type == pygame.QUIT:
+            run = False
 
-    pygame.draw.rect(screen, (200,200,200), (200,0,100,50))
-    pygame.draw.rect(screen, (200,200,200), (300,0,100,50))
-    pygame.draw.rect(screen, (200,200,200), (400,0,100,50))
+    keys = pygame.key.get_pressed()
 
-    font = pygame.font.Font(None, 24)
-    screen.blit(font.render("Brush", True, BLACK), (210, 15))
-    screen.blit(font.render("Rect", True, BLACK), (310, 15))
-    screen.blit(font.render("Circle", True, BLACK), (410, 15))
+    if keys[pygame.K_LEFT]:
+        dx, dy = -cell, 0
+    if keys[pygame.K_RIGHT]:
+        dx, dy = cell, 0
+    if keys[pygame.K_UP]:
+        dx, dy = 0, -cell
+    if keys[pygame.K_DOWN]:
+        dx, dy = 0, cell
 
-def get_color(pos):
-    x, y = pos
-    if y < 50:
-        if x < 50: return RED
-        if x < 100: return GREEN
-        if x < 150: return BLUE
-        if x < 200: return BLACK
-    return None
+    x += dx
+    y += dy
 
-running = True
+    snake.append((x, y))
 
-while running:
-    draw_ui()
+    if len(snake) > length:
+        snake.pop(0)
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+    # wall collision
+    if x < 0 or x >= w or y < 0 or y >= h:
+        run = False
 
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            pos = pygame.mouse.get_pos()
+    # self collision
+    if (x, y) in snake[:-1]:
+        run = False
 
-            new_color = get_color(pos)
-            if new_color:
-                color = new_color
-                continue
+    # food collision
+    if (x, y) == food:
+        score += 1
+        length += 1
+        food = spawn_food()
 
-            if 200 <= pos[0] <= 300:
-                tool = "brush"
-            elif 300 <= pos[0] <= 400:
-                tool = "rect"
-                start_pos = pos
-            elif 400 <= pos[0] <= 500:
-                tool = "circle"
-                start_pos = pos
+        # level system
+        if score % 3 == 0:
+            level += 1
 
-        if event.type == pygame.MOUSEMOTION:
-            if pygame.mouse.get_pressed()[0]:
-                x, y = event.pos
+    # speed increases with level
+    speed = 10 + level * 2
 
-                if tool == "brush":
-                    pygame.draw.circle(screen, color, (x, y), 5)
+    screen.fill((0, 0, 0))
 
-                elif tool == "eraser":
-                    pygame.draw.circle(screen, WHITE, (x, y), 10)
+    # draw snake
+    for s in snake:
+        pygame.draw.rect(screen, (0, 255, 0), (s[0], s[1], cell, cell))
 
-        if event.type == pygame.MOUSEBUTTONUP:
-            end_pos = pygame.mouse.get_pos()
+    # draw food
+    pygame.draw.rect(screen, (255, 0, 0), (food[0], food[1], cell, cell))
 
-            if tool == "rect" and start_pos:
-                x1, y1 = start_pos
-                x2, y2 = end_pos
-                pygame.draw.rect(screen, color, (min(x1,x2), min(y1,y2), abs(x1-x2), abs(y1-y2)))
+    # text (score + level)
+    font = pygame.font.Font(None, 30)
+    text = font.render(f"Score: {score}  Level: {level}", True, (255, 255, 255))
+    screen.blit(text, (10, 10))
 
-            if tool == "circle" and start_pos:
-                x1, y1 = start_pos
-                x2, y2 = end_pos
-                radius = int(math.hypot(x2-x1, y2-y1))
-                pygame.draw.circle(screen, color, start_pos, radius)
-
-            start_pos = None
-
-    pygame.display.flip()
-    clock.tick(60)
+    pygame.display.update()
+    clock.tick(speed)
 
 pygame.quit()
-sys.exit()
