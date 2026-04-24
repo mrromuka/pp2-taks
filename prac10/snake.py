@@ -17,10 +17,6 @@ length = 1
 score = 0
 level = 1
 
-food = (0, 0)
-
-clock = pygame.time.Clock()
-
 def spawn_food():
     while True:
         fx = random.randrange(0, w, cell)
@@ -30,6 +26,7 @@ def spawn_food():
 
 food = spawn_food()
 
+clock = pygame.time.Clock()
 run = True
 
 while run:
@@ -56,37 +53,29 @@ while run:
     if len(snake) > length:
         snake.pop(0)
 
-    # wall collision
     if x < 0 or x >= w or y < 0 or y >= h:
         run = False
 
-    # self collision
     if (x, y) in snake[:-1]:
         run = False
 
-    # food collision
     if (x, y) == food:
         score += 1
         length += 1
         food = spawn_food()
 
-        # level system
         if score % 3 == 0:
             level += 1
 
-    # speed increases with level
     speed = 10 + level * 2
 
     screen.fill((0, 0, 0))
 
-    # draw snake
     for s in snake:
         pygame.draw.rect(screen, (0, 255, 0), (s[0], s[1], cell, cell))
 
-    # draw food
     pygame.draw.rect(screen, (255, 0, 0), (food[0], food[1], cell, cell))
 
-    # text (score + level)
     font = pygame.font.Font(None, 30)
     text = font.render(f"Score: {score}  Level: {level}", True, (255, 255, 255))
     screen.blit(text, (10, 10))
