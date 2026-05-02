@@ -1,10 +1,4 @@
--- ============================================================
--- PHONEBOOK TSIS 1 - SCHEMA
--- ============================================================
 
--- ─────────────────────────────────────────────────────────────
--- GROUPS
--- ─────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS groups (
     id   SERIAL PRIMARY KEY,
     name VARCHAR(50) UNIQUE NOT NULL
@@ -15,9 +9,7 @@ VALUES ('Family'), ('Work'), ('Friend'), ('Other')
 ON CONFLICT (name) DO NOTHING;
 
 
--- ─────────────────────────────────────────────────────────────
--- CONTACTS
--- ─────────────────────────────────────────────────────────────
+
 CREATE TABLE IF NOT EXISTS contacts (
     id         SERIAL PRIMARY KEY,
     username   VARCHAR(50) UNIQUE NOT NULL,
@@ -30,9 +22,7 @@ CREATE TABLE IF NOT EXISTS contacts (
 );
 
 
--- ─────────────────────────────────────────────────────────────
--- PHONES (1-to-many)
--- ─────────────────────────────────────────────────────────────
+
 CREATE TABLE IF NOT EXISTS phones (
     id         SERIAL PRIMARY KEY,
     contact_id INTEGER REFERENCES contacts(id) ON DELETE CASCADE,
@@ -41,9 +31,6 @@ CREATE TABLE IF NOT EXISTS phones (
 );
 
 
--- ─────────────────────────────────────────────────────────────
--- INDEXES
--- ─────────────────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_contacts_username ON contacts(username);
 CREATE INDEX IF NOT EXISTS idx_contacts_email ON contacts(email);
 CREATE INDEX IF NOT EXISTS idx_phones_phone ON phones(phone);

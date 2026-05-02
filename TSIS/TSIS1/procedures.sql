@@ -1,10 +1,4 @@
--- ============================================================
--- PHONEBOOK TSIS 1 - PROCEDURES
--- ============================================================
 
--- ─────────────────────────────────────────────────────────────
--- PROCEDURE: ADD PHONE
--- ─────────────────────────────────────────────────────────────
 CREATE OR REPLACE PROCEDURE add_phone(
     p_contact_name VARCHAR,
     p_phone        VARCHAR,
@@ -33,9 +27,7 @@ END;
 $$;
 
 
--- ─────────────────────────────────────────────────────────────
--- PROCEDURE: MOVE TO GROUP
--- ─────────────────────────────────────────────────────────────
+
 CREATE OR REPLACE PROCEDURE move_to_group(
     p_contact_name VARCHAR,
     p_group_name   VARCHAR
@@ -57,7 +49,6 @@ BEGIN
         RETURNING id INTO v_group_id;
     END IF;
 
-    -- найти контакт
     SELECT id INTO v_contact_id
     FROM contacts
     WHERE username = p_contact_name;
@@ -73,9 +64,6 @@ END;
 $$;
 
 
--- ─────────────────────────────────────────────────────────────
--- FUNCTION: SEARCH CONTACTS (ALL FIELDS + PHONES)
--- ─────────────────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION search_contacts(p_query TEXT)
 RETURNS TABLE (
     username   VARCHAR,

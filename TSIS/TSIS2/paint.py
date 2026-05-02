@@ -5,9 +5,7 @@ from datetime import datetime
 
 pygame.init()
 
-# -------------------------
-# Window settings
-# -------------------------
+
 WIDTH, HEIGHT = 1200, 800
 TOOLBAR_HEIGHT = 100
 CANVAS_RECT = pygame.Rect(0, TOOLBAR_HEIGHT, WIDTH, HEIGHT - TOOLBAR_HEIGHT)
@@ -15,9 +13,7 @@ CANVAS_RECT = pygame.Rect(0, TOOLBAR_HEIGHT, WIDTH, HEIGHT - TOOLBAR_HEIGHT)
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("TSIS 2 Paint Application")
 
-# -------------------------
-# Colors
-# -------------------------
+
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
@@ -37,21 +33,15 @@ COLOR_OPTIONS = [
     YELLOW, PURPLE, ORANGE, PINK, BROWN
 ]
 
-# -------------------------
-# Fonts
-# -------------------------
+
 font = pygame.font.SysFont("arial", 20)
 small_font = pygame.font.SysFont("arial", 16)
 
-# -------------------------
-# Canvas
-# -------------------------
+
 canvas = pygame.Surface((WIDTH, HEIGHT - TOOLBAR_HEIGHT))
 canvas.fill(WHITE)
 
-# -------------------------
-# Tools
-# -------------------------
+
 TOOLS = [
     "pencil", "line", "rect", "circle", "square",
     "right_triangle", "equilateral_triangle", "rhombus",
@@ -68,9 +58,7 @@ BRUSH_SIZES = {
     3: 10
 }
 
-# -------------------------
-# State variables
-# -------------------------
+
 drawing = False
 start_pos = None
 last_pos = None
@@ -80,9 +68,7 @@ text_mode = False
 text_position = None
 text_input = ""
 
-# -------------------------
-# Buttons
-# -------------------------
+
 tool_buttons = {}
 color_buttons = []
 size_buttons = {}
@@ -111,13 +97,11 @@ size_buttons[1] = pygame.Rect(950, 10, 60, 30)
 size_buttons[2] = pygame.Rect(1020, 10, 60, 30)
 size_buttons[3] = pygame.Rect(1090, 10, 60, 30)
 
-# -------------------------
-# Helper functions
-# -------------------------
+
 def draw_toolbar():
     pygame.draw.rect(screen, LIGHT_GRAY, (0, 0, WIDTH, TOOLBAR_HEIGHT))
 
-    # Tool buttons
+
     for tool, rect in tool_buttons.items():
         color = DARK_GRAY if tool == current_tool else GRAY
         pygame.draw.rect(screen, color, rect)
@@ -125,14 +109,14 @@ def draw_toolbar():
         label = small_font.render(tool, True, BLACK)
         screen.blit(label, (rect.x + 5, rect.y + 7))
 
-    # Color buttons
+
     for rect, color in color_buttons:
         pygame.draw.rect(screen, color, rect)
         pygame.draw.rect(screen, BLACK, rect, 2)
         if color == current_color:
             pygame.draw.rect(screen, BLACK, rect, 4)
 
-    # Size buttons
+    
     for key, rect in size_buttons.items():
         color = DARK_GRAY if BRUSH_SIZES[key] == brush_size else GRAY
         pygame.draw.rect(screen, color, rect)
@@ -140,7 +124,7 @@ def draw_toolbar():
         label = font.render(str(key), True, BLACK)
         screen.blit(label, (rect.x + 22, rect.y + 4))
 
-    # Current info
+
     info_text = font.render(
         f"Tool: {current_tool} | Color: {current_color} | Brush: {brush_size}px | Ctrl+S to save",
         True,
@@ -154,7 +138,7 @@ def draw_on_screen():
     draw_toolbar()
     screen.blit(canvas, (0, TOOLBAR_HEIGHT))
 
-    # Live preview for line/shapes
+
     if drawing and start_pos and current_pos and current_tool in [
         "line", "rect", "circle", "square",
         "right_triangle", "equilateral_triangle", "rhombus"
@@ -163,7 +147,6 @@ def draw_on_screen():
         draw_shape(preview, current_tool, start_pos, current_pos, current_color, brush_size)
         screen.blit(preview, (0, TOOLBAR_HEIGHT))
 
-    # Text preview
     if text_mode and text_position:
         preview_text = font.render(text_input, True, current_color)
         screen.blit(preview_text, text_position)
@@ -203,10 +186,12 @@ def draw_shape(surface, tool, start, end, color, width):
 
     elif tool == "square":
         side = max(abs(x2 - x1), abs(y2 - y1))
-        rect = pygame.Rect(x1, y1, side if x2 >= x1 else -side, side if y2 >= y1 else -side)
-        rect = rect.normalize()
+        x = x1 if x2 >= x1 else x1 - side
+        y = y1 if y2 >= y1 else y1 - side
+        rect = pygame.Rect(x, y, side, side)
         pygame.draw.rect(surface, color, rect, width)
 
+    
     elif tool == "right_triangle":
         points = [(x1, y1), (x1, y2), (x2, y2)]
         pygame.draw.polygon(surface, color, points, width)
@@ -261,9 +246,7 @@ def flood_fill(surface, start_pos, fill_color):
         queue.append((px, py - 1))
 
 
-# -------------------------
-# Main loop
-# -------------------------
+
 clock = pygame.time.Clock()
 
 while True:
@@ -304,11 +287,11 @@ while True:
                 else:
                     text_input += event.unicode
 
-        # Mouse down
+       
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = event.pos
 
-            # Toolbar buttons
+         
             clicked_toolbar = False
 
             for tool, rect in tool_buttons.items():
@@ -359,7 +342,7 @@ while True:
                     elif current_tool == "eraser":
                         pygame.draw.circle(canvas, WHITE, cpos, brush_size // 2 + 3)
 
-        # Mouse motion
+   
         elif event.type == pygame.MOUSEMOTION:
             if drawing and inside_canvas(event.pos):
                 cpos = canvas_mouse_pos(event.pos)
@@ -373,7 +356,7 @@ while True:
                     pygame.draw.line(canvas, WHITE, last_pos, cpos, brush_size + 6)
                     last_pos = cpos
 
-        # Mouse up
+
         elif event.type == pygame.MOUSEBUTTONUP:
             if drawing:
                 if inside_canvas(event.pos):

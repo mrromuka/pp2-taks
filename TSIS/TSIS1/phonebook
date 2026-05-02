@@ -3,12 +3,10 @@ import csv
 import json
 from connect import get_connection
 
-# ── подключение к базе данных ──────────────────────────────────
+
 conn = get_connection()
 cur = conn.cursor()
-# ──────────────────────────────────────────────────────────────
-# 1. ДОБАВИТЬ КОНТАКТ
-# ──────────────────────────────────────────────────────────────
+
 def add_contact():
     print("\n── Добавить контакт ──")
     username   = input("Username: ").strip()
@@ -27,7 +25,7 @@ def add_contact():
     if not birthday:
         birthday = None
 
-    # найти или создать группу
+
     cur.execute("SELECT id FROM groups WHERE name = %s", (group,))
     row = cur.fetchone()
     if row:
@@ -37,7 +35,7 @@ def add_contact():
         group_id = cur.fetchone()[0]
         conn.commit()
 
-    # добавить контакт
+  
     try:
         cur.execute(
             "INSERT INTO contacts (username, first_name, last_name, email, birthday, group_id) VALUES (%s, %s, %s, %s, %s, %s)",
@@ -50,7 +48,7 @@ def add_contact():
         print("Ошибка: такой username уже существует.")
         return
 
-    # добавить телефон
+    
     if phone:
         cur.execute("SELECT id FROM contacts WHERE username = %s", (username,))
         contact_id = cur.fetchone()[0]
@@ -61,9 +59,7 @@ def add_contact():
         conn.commit()
 
 
-# ──────────────────────────────────────────────────────────────
-# 2. ПОКАЗАТЬ ВСЕ КОНТАКТЫ
-# ──────────────────────────────────────────────────────────────
+
 def show_all():
     print("\n── Все контакты ──")
     cur.execute("""
@@ -85,9 +81,7 @@ def show_all():
         print(f"  {username} | {first_name} {last_name} | {email} | {birthday} | {group} | {phone} ({phone_type})")
 
 
-# ──────────────────────────────────────────────────────────────
-# 3. ПОИСК ПО ИМЕНИ ИЛИ ТЕЛЕФОНУ
-# ──────────────────────────────────────────────────────────────
+
 def search():
     print("\n── Поиск ──")
     query = input("Введите имя, email или телефон: ").strip()
@@ -120,9 +114,7 @@ def search():
         print(f"  {username} | {first_name} {last_name} | {email} | {birthday} | {group} | {phone} ({phone_type})")
 
 
-# ──────────────────────────────────────────────────────────────
-# 4. ФИЛЬТР ПО ГРУППЕ
-# ──────────────────────────────────────────────────────────────
+
 def filter_by_group():
     print("\n── Фильтр по группе ──")
     group = input("Название группы (Family/Work/Friend/Other): ").strip()
@@ -149,9 +141,6 @@ def filter_by_group():
         print(f"  {username} | {first_name} {last_name} | {email} | {grp} | {phone} ({phone_type})")
 
 
-# ──────────────────────────────────────────────────────────────
-# 5. СОРТИРОВКА
-# ──────────────────────────────────────────────────────────────
 def list_sorted():
     print("\n── Список с сортировкой ──")
     print("  1 - По имени")
@@ -185,9 +174,6 @@ def list_sorted():
         print(f"  {username} | {first_name} {last_name} | {email} | {birthday} | {group} | {phone} ({phone_type})")
 
 
-# ──────────────────────────────────────────────────────────────
-# 6. ПОСТРАНИЧНЫЙ ПРОСМОТР
-# ──────────────────────────────────────────────────────────────
 def paginate():
     print("\n── Постраничный просмотр ──")
     try:
@@ -238,9 +224,7 @@ def paginate():
             break
 
 
-# ──────────────────────────────────────────────────────────────
-# 7. ДОБАВИТЬ ТЕЛЕФОН К КОНТАКТУ
-# ──────────────────────────────────────────────────────────────
+
 def add_phone():
     print("\n── Добавить телефон ──")
     username   = input("Username: ").strip()
@@ -266,9 +250,6 @@ def add_phone():
     print("Телефон добавлен!")
 
 
-# ──────────────────────────────────────────────────────────────
-# 8. ПЕРЕМЕСТИТЬ В ГРУППУ
-# ──────────────────────────────────────────────────────────────
 def move_to_group():
     print("\n── Переместить в группу ──")
     username   = input("Username: ").strip()
@@ -278,7 +259,7 @@ def move_to_group():
         print("Username и группа обязательны.")
         return
 
-    # найти или создать группу
+    
     cur.execute("SELECT id FROM groups WHERE name = %s", (group_name,))
     row = cur.fetchone()
     if row:
@@ -297,9 +278,7 @@ def move_to_group():
         print(f"Контакт перемещён в группу '{group_name}'.")
 
 
-# ──────────────────────────────────────────────────────────────
-# 9. ЭКСПОРТ В JSON
-# ──────────────────────────────────────────────────────────────
+
 def export_json():
     print("\n── Экспорт в JSON ──")
     filepath = input("Имя файла [contacts.json]: ").strip() or "contacts.json"
@@ -340,9 +319,7 @@ def export_json():
     print(f"Экспортировано {len(result)} контактов в '{filepath}'.")
 
 
-# ──────────────────────────────────────────────────────────────
-# 10. ИМПОРТ ИЗ JSON
-# ──────────────────────────────────────────────────────────────
+
 def import_json():
     print("\n── Импорт из JSON ──")
     filepath = input("Имя файла [contacts.json]: ").strip() or "contacts.json"
@@ -359,7 +336,7 @@ def import_json():
         if not username:
             continue
 
-        # проверить дубликат
+        
         cur.execute("SELECT id FROM contacts WHERE username = %s", (username,))
         existing = cur.fetchone()
 
@@ -368,11 +345,11 @@ def import_json():
             if choice != "o":
                 print(f"  Пропущен: {username}")
                 continue
-            # удалить старый
+        
             cur.execute("DELETE FROM contacts WHERE username = %s", (username,))
             conn.commit()
 
-        # группа
+        
         group_name = rec.get("group") or "Other"
         cur.execute("SELECT id FROM groups WHERE name = %s", (group_name,))
         row = cur.fetchone()
@@ -383,7 +360,7 @@ def import_json():
             group_id = cur.fetchone()[0]
             conn.commit()
 
-        # контакт
+        
         cur.execute(
             "INSERT INTO contacts (username, first_name, last_name, email, birthday, group_id) VALUES (%s,%s,%s,%s,%s,%s)",
             (username, rec.get("first_name"), rec.get("last_name"),
@@ -391,7 +368,6 @@ def import_json():
         )
         conn.commit()
 
-        # телефоны
         cur.execute("SELECT id FROM contacts WHERE username = %s", (username,))
         contact_id = cur.fetchone()[0]
         for ph in rec.get("phones", []):
@@ -408,9 +384,7 @@ def import_json():
     print("Импорт завершён.")
 
 
-# ──────────────────────────────────────────────────────────────
-# 11. ИМПОРТ ИЗ CSV
-# ──────────────────────────────────────────────────────────────
+
 def import_csv():
     print("\n── Импорт из CSV ──")
     filepath = input("Имя файла [contacts.csv]: ").strip() or "contacts.csv"
@@ -473,9 +447,7 @@ def import_csv():
     print(f"Импорт из CSV завершён: {inserted} контактов.")
 
 
-# ──────────────────────────────────────────────────────────────
-# 12. УДАЛИТЬ КОНТАКТ
-# ──────────────────────────────────────────────────────────────
+
 def delete_contact():
     print("\n── Удалить контакт ──")
     username = input("Username: ").strip()
@@ -497,9 +469,7 @@ def delete_contact():
         print("Отменено.")
 
 
-# ──────────────────────────────────────────────────────────────
-# ГЛАВНОЕ МЕНЮ
-# ──────────────────────────────────────────────────────────────
+
 while True:
     print("""
 ╔══════════════════════════════════════╗
@@ -507,7 +477,7 @@ while True:
 ╠══════════════════════════════════════╣
 ║  1  Добавить контакт                 ║
 ║  2  Показать все контакты            ║
-║  3  Поиск (имя / email / телефон)   ║
+║  3  Поиск (имя / email / телефон)    ║
 ║  4  Фильтр по группе                 ║
 ║  5  Список с сортировкой             ║
 ║  6  Постраничный просмотр            ║
